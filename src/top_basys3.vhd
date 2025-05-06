@@ -110,7 +110,7 @@ architecture top_basys3_arch of top_basys3 is
         );
     end component;
     
-    component binaryHexDisp is
+    component sevenseg_decoder is
         port (
             i_Hex : in STD_LOGIC_VECTOR (3 downto 0);
             o_seg_n : out STD_LOGIC_VECTOR (6 downto 0)
@@ -213,7 +213,7 @@ begin
             o_data => w_hex
         );
     
-    sevenseg1: binaryHexDisp
+    sevenseg1: sevenseg_decoder
         port map(
             i_Hex => w_hex,
             o_seg_n => seg
