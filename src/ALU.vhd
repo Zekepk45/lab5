@@ -87,7 +87,7 @@ begin
                 w_sum when "001",
                 w_and when "010",
                 w_or when "011";
-                --|"00000000" when others;
+                "00000000" when others;
     o_result <= w_result;
 
     o_flags(3) <= w_result(7);
