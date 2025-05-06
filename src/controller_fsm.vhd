@@ -38,8 +38,40 @@ entity controller_fsm is
 end controller_fsm;
 
 architecture FSM of controller_fsm is
+    
+    signal f_q : std_logic_vector(3 downto 0) := "0000";
+    signal f_qnext : std_logic_vector(3 downto 0) := "0000";
 
 begin
 
+    f_qnext(0) <= f_q(3);
+    f_qnext(1) <= f_q(0);
+    f_qnext(2) <= f_q(1);
+    f_qnext(3) <= f_q(2);
+    
+    o_cycle <= f_q;
+    
+    register_proc : process (i_adv, i_reset)
+    begin
+    if i_reset = '1' then
+        f_q <= "0001";
+    elsif i_adv = '1' then
+        f_q <= f_qnext;
+    end if;
+    end process register_proc;
 
 end FSM;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
