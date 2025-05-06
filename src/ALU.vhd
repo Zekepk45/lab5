@@ -39,89 +39,60 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
  
 entity ALU is
-
     Port ( i_A : in STD_LOGIC_VECTOR (7 downto 0);
-
            i_B : in STD_LOGIC_VECTOR (7 downto 0);
-
            i_op : in STD_LOGIC_VECTOR (2 downto 0);
-
            o_result : out STD_LOGIC_VECTOR (7 downto 0);
-
            o_flags : out STD_LOGIC_VECTOR (3 downto 0));
-
 end ALU;
  
 architecture Behavioral of ALU is
-
-    signal result : signed(7 downto 0);
-
-    signal zero, negative, overflow, carry : std_logic;
-
+    component ripple_adder is
+        port(
+            A: in std_logic_vector(3 downto 0);
+            B: in std_logic_vector(3 downto 0);
+            Cin : in STD_LOGIC; 
+            S : out std_logic_vector(3 downto 0);
+            Cout : out std_logic 
+          );
+          end component ripple_adder;
+        signal w_sum: std_logic_vector(7 downto 0);
+        signal w_lower_carry: STD_LOGIC;
+        signal w_upper_carry: STD_LOGIC;
+        signal resultOUT : std_logic_vector(7 downto 0);
+        signal w_B_ALU : std_logic_vector(7 downto 0);
+ 
 begin
-
-    process(i_A, i_B, i_op)
-
-    begin
-
-         case i_op is
-
-        when "000" => -- Add
-
-            result <= signed(i_A) + signed(i_B);
-
-        when "001" => -- Subtract
-
-            result <= signed(i_A) - signed(i_B);
-
-        when "010" => -- And
-
-            result <= signed(i_A and i_B);
-
-        when "011" => -- Or
-
-            result <= signed(i_A or i_B);
-
-        when others =>
-
-            result <= (others => '0');
-
-    end case;
-
-    -- Flags
-
-    if result = 0 then
-
-        zero <= '1';
-
-    else
-
-        zero <= '0';
-
-    end if;
-
-    negative <= result(7);
-
-    if (i_op = "000" and (i_A(7) = i_B(7) and result(7) /= i_A(7))) or
-
-       (i_op = "001" and (i_A(7) /= i_B(7) and result(7) = i_A(7))) then
-
-        overflow <= '1';
-
-    else
-
-        overflow <= '0';
-
-    end if;
-
-    carry <= '0'; -- Not applicable for 2's complement arithmetic
-
-    o_flags <= zero & negative & overflow & carry;
-
-    o_result <= std_logic_vector(result);
-
-end process;
-
+    w_B_ALU <= i_B when (i_OP(0) = '0') else
+                        not i_B;
+    Rippler_Lower : ripple_adder
+        port map(
+            A => i_A(3 downto 0),
+            B => w_B_ALU(3 downto 0),
+            Cin => i_OP(0),
+            S => w_sum(3 downto 0),
+            Cout => w_lower_carry
+          );
+     Ripple_Upper : ripple_adder 
+        port map(
+            A => i_A(7 downto 4),
+            B => w_B_ALU(7 downto 4),
+            Cin => w_lower_carry,
+            S => w_sum(7 downto 4),
+            Cout => w_upper_carry
+          );
+    -- MUX Stuff Now
+    resultOUT <= w_sum when i_OP = "000" else
+                 w_sum when i_OP = "001" else
+                 i_A and i_B when i_OP = "010" else
+                 i_A and i_B when i_OP = "011" else
+                 w_sum;
+    o_result <= resultOUT;
+    o_flags(0) <= not (i_OP(0) xor i_A(7) xor i_B(7)) and (i_A(7) xor w_sum(7)) and (not i_OP(1));
+    o_flags(1) <= w_upper_carry and (not i_OP(1));
+    o_flags(3) <= resultOUT(7);
+    o_flags(2) <= '1' when (resultOUT = x"00") else
+                '0';
 end Behavioral;
  
 

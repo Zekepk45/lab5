@@ -110,12 +110,22 @@ architecture top_basys3_arch of top_basys3 is
         );
     end component;
     
-    component sevenseg_decoder is
+    component binaryHexDisp is
         port (
             i_Hex : in STD_LOGIC_VECTOR (3 downto 0);
             o_seg_n : out STD_LOGIC_VECTOR (6 downto 0)
         );
     end component;
+    
+    component full_adder is
+        port ( 
+           A     : in std_logic;
+           B     : in std_logic;
+           Cin   : in std_logic;
+           S     : out std_logic;
+           Cout  : out std_logic
+           );
+        end component full_adder;
   
 begin
 	-- PORT MAPS ----------------------------------------
@@ -174,10 +184,6 @@ begin
         end if;
     end process;
     
-    --|process( cpu_state, w_result)
-    --|begin
-    --|    w_result <= 
-    
     alu_inst: ALU
         port map(
             i_A => w_A,
@@ -213,7 +219,7 @@ begin
             o_data => w_hex
         );
     
-    sevenseg1: sevenseg_decoder
+    sevenseg1: binaryHexDisp
         port map(
             i_Hex => w_hex,
             o_seg_n => seg
